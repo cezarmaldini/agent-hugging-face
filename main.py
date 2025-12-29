@@ -1,24 +1,28 @@
 import os
 from dotenv import load_dotenv
 
+from agent import Agent
+from tools import schema_tools
+from prompts import PROMPT_SYSTEM
+
 from huggingface_hub import InferenceClient
 
 load_dotenv()
 
+# Setup
 HF_TOKEN = os.getenv('HF_TOKEN')
 HF_MODEL=os.getenv('HF_MODEL')
 
 client = InferenceClient(
-    api_key=HF_TOKEN,
-    model=HF_MODEL 
+    token=HF_TOKEN,
+    model=HF_MODEL
 )
 
-message = input('Faça sua pergunta:')
-
-response = client.chat.completions.create(
-    messages=[
-        {'role': 'user', 'content': message}
-    ]
+agent = Agent(
+    client=client,
+    system=PROMPT_SYSTEM,
+    tools=[schema_tools]
 )
 
-print(response.choices[0].message.content)
+response = agent(message='Qual a temperatura em tokyo?')
+print(response)
